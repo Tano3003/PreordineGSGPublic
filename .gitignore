@@ -1,0 +1,24 @@
+# ============================================================================
+#  Questo repository contiene il PRODOTTO GIA' COMPILATO: il sito costruito
+#  (Web/), il backend PHP e sync.exe. Quei file vanno versionati, quindi qui
+#  non ci sono le solite regole *.exe / assets / dist.
+#  Restano fuori solo i file che nascono dall'uso, e i segreti.
+# ============================================================================
+
+# ---- Configurazione reale del sync: contiene la API key del sito ----
+# Nel repository viaggia solo config.example.txt.
+sync-offline/config.txt
+
+# ---- Menù scaricato dal gestionale: si rigenera a ogni sync ----
+sync-offline/offline-data.json
+offline-data.json
+*.old
+
+# ---- Archivio ordini e dati scritti dal backend PHP a runtime ----
+Web/api/data/*.json
+
+# ---- Sistema ----
+Thumbs.db
+desktop.ini
+.DS_Store
+*.log

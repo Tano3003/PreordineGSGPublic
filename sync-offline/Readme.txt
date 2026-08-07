@@ -1,0 +1,1 @@
+Questo programma serve per fare l'upload del menu tra il programma SGS (Utilizzale api native) e il sito web dove è stato fatto il deploy della parte web

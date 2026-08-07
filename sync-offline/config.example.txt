@@ -1,0 +1,12 @@
+# MODELLO di configurazione. Copia questo file come "config.txt"
+# e metti i valori veri. config.txt NON viene salvato su git (contiene la chiave).
+
+# Indirizzo del gestionale (HTTP). Default se giri il tool SULLO STESSO PC
+# del gestionale. Da un altro PC della LAN usa l'IP, es. http://192.168.1.10:9020
+gestionale = http://localhost:9020
+
+# Endpoint di upload del sito pubblico (con la barra /redentore/).
+upload_url = https://www.sagralozzo.it/test/api/offline-data.php
+
+# La API key impostata nel pannello settings/ del sito.
+api_key = LA-TUA-CHIAVE

@@ -1,0 +1,9 @@
+# Blocca l'accesso diretto via web ai file dati (es. orders.json con i nomi
+# dei clienti). I dati vengono serviti solo tramite gli endpoint PHP.
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>
