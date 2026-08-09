@@ -39,6 +39,8 @@ if ($method === 'POST') {
     'coperto'  => isset($b['coperto'])  ? max(0, (float)$b['coperto']) : 0,
     // Importo asporto: addebitato una sola volta per ordine, solo col flag asporto.
     'importoAsporto' => isset($b['importoAsporto']) ? max(0, (float)$b['importoAsporto']) : 0,
+    // Campo note nel preordine: assente nel payload = comportamento di default (mostrato).
+    'mostraNote' => isset($b['mostraNote']) ? (bool)$b['mostraNote'] : true,
   ];
   if (trim($s['title']) === '') $s['title'] = 'SAGRA';
   write_json_atomic($file, $s);

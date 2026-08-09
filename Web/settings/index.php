@@ -22,9 +22,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Importo asporto: una tantum per ordine, solo se il cliente sceglie l'asporto.
     $asporto = isset($_POST['importoAsporto']) ? (float)str_replace(',', '.', trim($_POST['importoAsporto'])) : 0;
     if ($asporto < 0) $asporto = 0;
+    // Checkbox: presente in $_POST solo se spuntata.
+    $mostraNote = isset($_POST['mostraNote']);
     write_json_atomic($settingsFile, [
       'title' => $title, 'subtitle' => $sub,
-      'coperto' => $coperto, 'importoAsporto' => $asporto
+      'coperto' => $coperto, 'importoAsporto' => $asporto,
+      'mostraNote' => $mostraNote
     ]);
     $msg = 'Configurazione salvata.';
   }
@@ -111,7 +114,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ── Dati correnti ────────────────────────────────────────────
-$settings = read_json($settingsFile, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0]);
+$settings = read_json($settingsFile, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0, 'mostraNote' => true]);
+// File salvati prima dell'introduzione del campo: nessuna chiave => note mostrate (comportamento precedente).
+$mostraNoteChecked = !array_key_exists('mostraNote', $settings) || $settings['mostraNote'];
 $menu     = read_json($menuFile, null);
 $menuCats = ($menu && isset($menu['categories'])) ? count($menu['categories']) : 0;
 $menuItems = 0;
@@ -145,6 +150,11 @@ admin_header('Impostazioni', 'settings');
     <label for="importoAsporto">Importo asporto (€)</label>
     <input type="number" id="importoAsporto" name="importoAsporto" min="0" step="0.10" value="<?= htmlspecialchars($settings['importoAsporto'] ?? 0) ?>">
     <small class="muted">0 = nessun addebito. Viene aggiunto <strong>una sola volta per ordine</strong>, e solo se il cliente mette il flag «Per asporto» (non al QR). Negli ordini per asporto il coperto non si applica.</small>
+    <label class="check-field" style="display:flex;align-items:center;gap:8px;margin-top:10px">
+      <input type="checkbox" id="mostraNote" name="mostraNote" value="1" <?= $mostraNoteChecked ? 'checked' : '' ?>>
+      <span>Mostra il campo «Note» nel preordine</span>
+    </label>
+    <small class="muted">Se disattivato, il cliente non vede il campo note nel preordine e le note non vengono incluse nel QR né nell'ordine registrato.</small>
     <button class="btn" type="submit">Salva configurazione</button>
   </form>
   <p class="muted" style="margin-top:12px">
