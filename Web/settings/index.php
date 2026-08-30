@@ -24,10 +24,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($asporto < 0) $asporto = 0;
     // Checkbox: presente in $_POST solo se spuntata.
     $mostraNote = isset($_POST['mostraNote']);
+    // Tastiera del campo «Tavolo»: solo 'alfanumerica' cambia qualcosa, tutto
+    // il resto ricade sul default numerico.
+    $tastieraTavolo = (isset($_POST['tastieraTavolo']) && $_POST['tastieraTavolo'] === 'alfanumerica') ? 'alfanumerica' : 'numerica';
     write_json_atomic($settingsFile, [
       'title' => $title, 'subtitle' => $sub,
       'coperto' => $coperto, 'importoAsporto' => $asporto,
-      'mostraNote' => $mostraNote
+      'mostraNote' => $mostraNote,
+      'tastieraTavolo' => $tastieraTavolo
     ]);
     $msg = 'Configurazione salvata.';
   }
@@ -114,9 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ── Dati correnti ────────────────────────────────────────────
-$settings = read_json($settingsFile, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0, 'mostraNote' => true]);
+$settings = read_json($settingsFile, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0, 'mostraNote' => true, 'tastieraTavolo' => 'numerica']);
 // File salvati prima dell'introduzione del campo: nessuna chiave => note mostrate (comportamento precedente).
 $mostraNoteChecked = !array_key_exists('mostraNote', $settings) || $settings['mostraNote'];
+// Idem per la tastiera del tavolo: chiave assente => numerica (il default).
+$tastieraTavolo = (isset($settings['tastieraTavolo']) && $settings['tastieraTavolo'] === 'alfanumerica') ? 'alfanumerica' : 'numerica';
 $menu     = read_json($menuFile, null);
 $menuCats = ($menu && isset($menu['categories'])) ? count($menu['categories']) : 0;
 $menuItems = 0;
@@ -155,6 +161,12 @@ admin_header('Impostazioni', 'settings');
       <span>Mostra il campo «Note» nel preordine</span>
     </label>
     <small class="muted">Se disattivato, il cliente non vede il campo note nel preordine e le note non vengono incluse nel QR né nell'ordine registrato.</small>
+    <label for="tastieraTavolo" style="margin-top:10px">Tastiera del campo «Tavolo»</label>
+    <select id="tastieraTavolo" name="tastieraTavolo">
+      <option value="numerica"     <?= $tastieraTavolo === 'numerica'     ? 'selected' : '' ?>>Numerica — tastierina dei soli numeri (predefinita)</option>
+      <option value="alfanumerica" <?= $tastieraTavolo === 'alfanumerica' ? 'selected' : '' ?>>Alfanumerica — numeri e lettere (A12, Gazebo 3)</option>
+    </select>
+    <small class="muted">Riguarda solo la tastiera che si apre sul telefono e il suggerimento nel campo: il numero di tavolo viene comunque salvato come testo libero, quindi anche con la tastiera numerica un tavolo come <code>A12</code> resta valido se scritto da tastiera fisica o incollato.</small>
     <button class="btn" type="submit">Salva configurazione</button>
   </form>
   <p class="muted" style="margin-top:12px">
