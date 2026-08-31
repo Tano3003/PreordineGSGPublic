@@ -45,7 +45,11 @@ usort($orders, function ($a, $b) use ($sort) {
   switch ($sort) {
     case 'oldest': return ($a['number'] ?? 0) <=> ($b['number'] ?? 0);
     case 'name':   return strcasecmp((string)($a['name'] ?? ''), (string)($b['name'] ?? ''));
-    case 'table':  return (intval($a['table'] ?? 0) <=> intval($b['table'] ?? 0)) ?: (($b['number'] ?? 0) <=> ($a['number'] ?? 0));
+    // Il tavolo e' testo libero, non un numero: strnatcasecmp tiene i numeri in
+    // ordine numerico (2 prima di 10) e regge anche i tavoli alfanumerici
+    // ("A2" prima di "A10"), che con intval() finivano tutti a 0 e si
+    // mescolavano fra loro. A parita' di tavolo, l'ordine piu' recente in cima.
+    case 'table':  return strnatcasecmp((string)($a['table'] ?? ''), (string)($b['table'] ?? '')) ?: (($b['number'] ?? 0) <=> ($a['number'] ?? 0));
     default:       return ($b['number'] ?? 0) <=> ($a['number'] ?? 0);  // recent
   }
 });

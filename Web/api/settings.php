@@ -23,6 +23,9 @@ if ($method === 'GET') {
   // (impostazioni salvate prima di queste funzioni): così non sovrascrivono
   // con 0 i valori di config.json.
   $s = read_json($file, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0]);
+  // Impostazioni salvate prima di questa opzione: nessuna chiave => tastiera
+  // numerica, che è il default e il comportamento che il sito aveva prima.
+  if (!isset($s['tastieraTavolo'])) $s['tastieraTavolo'] = 'numerica';
   $s['logo'] = $logo;
   json_out($s);
 }
@@ -41,6 +44,12 @@ if ($method === 'POST') {
     'importoAsporto' => isset($b['importoAsporto']) ? max(0, (float)$b['importoAsporto']) : 0,
     // Campo note nel preordine: assente nel payload = comportamento di default (mostrato).
     'mostraNote' => isset($b['mostraNote']) ? (bool)$b['mostraNote'] : true,
+    // Campo «Tavolo» nel preordine: assente nel payload = mostrato (default).
+    'mostraTavolo' => isset($b['mostraTavolo']) ? (bool)$b['mostraTavolo'] : true,
+    // Tastiera del campo «Tavolo» sul telefono: 'alfanumerica' apre quella
+    // completa, qualunque altro valore (default) la tastierina dei soli numeri.
+    // Il tavolo resta comunque una stringa libera: qui si sceglie la tastiera.
+    'tastieraTavolo' => (isset($b['tastieraTavolo']) && $b['tastieraTavolo'] === 'alfanumerica') ? 'alfanumerica' : 'numerica',
   ];
   if (trim($s['title']) === '') $s['title'] = 'SAGRA';
   write_json_atomic($file, $s);
