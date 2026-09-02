@@ -28,12 +28,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Tastiera del campo «Tavolo»: solo 'alfanumerica' cambia qualcosa, tutto
     // il resto ricade sul default numerico.
     $tastieraTavolo = (isset($_POST['tastieraTavolo']) && $_POST['tastieraTavolo'] === 'alfanumerica') ? 'alfanumerica' : 'numerica';
+    // Testi della schermata QR: vuoti se il campo è lasciato bianco, così il
+    // sito ripiega sui suoi default invece di mostrare una stringa vuota.
+    $msgOrdineConcluso = isset($_POST['msgOrdineConcluso']) ? mb_substr(trim($_POST['msgOrdineConcluso']), 0, 100) : '';
+    $msgMostraQr       = isset($_POST['msgMostraQr'])       ? mb_substr(trim($_POST['msgMostraQr']),       0, 300) : '';
     write_json_atomic($settingsFile, [
       'title' => $title, 'subtitle' => $sub,
       'coperto' => $coperto, 'importoAsporto' => $asporto,
       'mostraNote' => $mostraNote,
       'mostraTavolo' => $mostraTavolo,
-      'tastieraTavolo' => $tastieraTavolo
+      'tastieraTavolo' => $tastieraTavolo,
+      'msgOrdineConcluso' => $msgOrdineConcluso,
+      'msgMostraQr' => $msgMostraQr
     ]);
     $msg = 'Configurazione salvata.';
   }
@@ -120,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ── Dati correnti ────────────────────────────────────────────
-$settings = read_json($settingsFile, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0, 'mostraNote' => true, 'mostraTavolo' => true, 'tastieraTavolo' => 'numerica']);
+$settings = read_json($settingsFile, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0, 'mostraNote' => true, 'mostraTavolo' => true, 'tastieraTavolo' => 'numerica', 'msgOrdineConcluso' => '', 'msgMostraQr' => '']);
 // File salvati prima dell'introduzione del campo: nessuna chiave => note mostrate (comportamento precedente).
 $mostraNoteChecked = !array_key_exists('mostraNote', $settings) || $settings['mostraNote'];
 // Idem per il campo «Tavolo»: chiave assente => mostrato, come faceva prima.
@@ -176,6 +182,15 @@ admin_header('Impostazioni', 'settings');
       <option value="alfanumerica" <?= $tastieraTavolo === 'alfanumerica' ? 'selected' : '' ?>>Alfanumerica — numeri e lettere (A12, Gazebo 3)</option>
     </select>
     <small class="muted">Non ha effetto se il campo «Tavolo» è nascosto. Riguarda solo la tastiera che si apre sul telefono e il suggerimento nel campo: il numero di tavolo viene comunque salvato come testo libero, quindi anche con la tastiera numerica un tavolo come <code>A12</code> resta valido se scritto da tastiera fisica o incollato.</small>
+    <label for="msgOrdineConcluso" style="margin-top:10px">Titolo a fine preordine</label>
+    <input type="text" id="msgOrdineConcluso" name="msgOrdineConcluso" maxlength="100"
+           placeholder="Ordine concluso" value="<?= htmlspecialchars($settings['msgOrdineConcluso'] ?? '') ?>">
+    <small class="muted">Mostrato in cima alla schermata del QR a fine preordine. Vuoto = usa il default («Ordine concluso»).</small>
+    <label for="msgMostraQr" style="margin-top:10px">Istruzioni a fine preordine</label>
+    <input type="text" id="msgMostraQr" name="msgMostraQr" maxlength="300"
+           placeholder="Adesso mostra questo qrcode in cassa per confermare l'ordine e procedere al pagamento"
+           value="<?= htmlspecialchars($settings['msgMostraQr'] ?? '') ?>">
+    <small class="muted">Il testo sotto al titolo, che spiega cosa fare col QR. Vuoto = usa il default.</small>
     <button class="btn" type="submit">Salva configurazione</button>
   </form>
   <p class="muted" style="margin-top:12px">

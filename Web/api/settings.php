@@ -26,6 +26,9 @@ if ($method === 'GET') {
   // Impostazioni salvate prima di questa opzione: nessuna chiave => tastiera
   // numerica, che è il default e il comportamento che il sito aveva prima.
   if (!isset($s['tastieraTavolo'])) $s['tastieraTavolo'] = 'numerica';
+  // Testi della schermata QR: chiave assente o vuota => il sito ripiega sui
+  // suoi default ("Ordine concluso" / istruzioni cassa), quindi qui non si
+  // forza nulla se non sono stati personalizzati.
   $s['logo'] = $logo;
   json_out($s);
 }
@@ -50,6 +53,10 @@ if ($method === 'POST') {
     // completa, qualunque altro valore (default) la tastierina dei soli numeri.
     // Il tavolo resta comunque una stringa libera: qui si sceglie la tastiera.
     'tastieraTavolo' => (isset($b['tastieraTavolo']) && $b['tastieraTavolo'] === 'alfanumerica') ? 'alfanumerica' : 'numerica',
+    // Testi della schermata QR: stringa vuota se non personalizzati, così il
+    // sito ripiega sui suoi default invece di mostrare una stringa vuota.
+    'msgOrdineConcluso' => isset($b['msgOrdineConcluso']) ? trim(mb_substr((string)$b['msgOrdineConcluso'], 0, 100)) : '',
+    'msgMostraQr'        => isset($b['msgMostraQr'])        ? trim(mb_substr((string)$b['msgMostraQr'],        0, 300)) : '',
   ];
   if (trim($s['title']) === '') $s['title'] = 'SAGRA';
   write_json_atomic($file, $s);
