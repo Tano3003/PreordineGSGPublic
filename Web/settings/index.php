@@ -32,6 +32,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // sito ripiega sui suoi default invece di mostrare una stringa vuota.
     $msgOrdineConcluso = isset($_POST['msgOrdineConcluso']) ? mb_substr(trim($_POST['msgOrdineConcluso']), 0, 100) : '';
     $msgMostraQr       = isset($_POST['msgMostraQr'])       ? mb_substr(trim($_POST['msgMostraQr']),       0, 300) : '';
+    // Note libere della pagina menù: possono contenere html multiriga (le
+    // scrive l'admin, vanno in pagina così come sono), quindi solo un limite
+    // di lunghezza, niente trim che ne alteri gli a-capo.
+    $notaTestata = isset($_POST['notaTestata']) ? mb_substr($_POST['notaTestata'], 0, 4000) : '';
+    $notaOrdine  = isset($_POST['notaOrdine'])  ? mb_substr($_POST['notaOrdine'],  0, 4000) : '';
     write_json_atomic($settingsFile, [
       'title' => $title, 'subtitle' => $sub,
       'coperto' => $coperto, 'importoAsporto' => $asporto,
@@ -39,7 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'mostraTavolo' => $mostraTavolo,
       'tastieraTavolo' => $tastieraTavolo,
       'msgOrdineConcluso' => $msgOrdineConcluso,
-      'msgMostraQr' => $msgMostraQr
+      'msgMostraQr' => $msgMostraQr,
+      'notaTestata' => $notaTestata,
+      'notaOrdine' => $notaOrdine
     ]);
     $msg = 'Configurazione salvata.';
   }
@@ -126,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ── Dati correnti ────────────────────────────────────────────
-$settings = read_json($settingsFile, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0, 'mostraNote' => true, 'mostraTavolo' => true, 'tastieraTavolo' => 'numerica', 'msgOrdineConcluso' => '', 'msgMostraQr' => '']);
+$settings = read_json($settingsFile, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0, 'mostraNote' => true, 'mostraTavolo' => true, 'tastieraTavolo' => 'numerica', 'msgOrdineConcluso' => '', 'msgMostraQr' => '', 'notaTestata' => '', 'notaOrdine' => '']);
 // File salvati prima dell'introduzione del campo: nessuna chiave => note mostrate (comportamento precedente).
 $mostraNoteChecked = !array_key_exists('mostraNote', $settings) || $settings['mostraNote'];
 // Idem per il campo «Tavolo»: chiave assente => mostrato, come faceva prima.
@@ -191,6 +198,14 @@ admin_header('Impostazioni', 'settings');
            placeholder="Adesso mostra questo qrcode in cassa per confermare l'ordine e procedere al pagamento"
            value="<?= htmlspecialchars($settings['msgMostraQr'] ?? '') ?>">
     <small class="muted">Il testo sotto al titolo, che spiega cosa fare col QR. Vuoto = usa il default.</small>
+    <label for="notaTestata" style="margin-top:10px">Nota nella pagina del menù (in testata)</label>
+    <textarea id="notaTestata" name="notaTestata" rows="3" maxlength="4000"
+              placeholder="es. Orari di apertura, avvisi…"><?= htmlspecialchars($settings['notaTestata'] ?? '') ?></textarea>
+    <small class="muted">Mostrata nella pagina del menù, subito sotto al titolo «Menù». Può andare su più righe e contenere html (es. <code>&lt;b&gt;</code>, <code>&lt;br&gt;</code>, <code>&lt;a&gt;</code>): va scritta con cautela, perché finisce in pagina così com'è. Vuota = non occupa spazio.</small>
+    <label for="notaOrdine" style="margin-top:10px">Nota nella pagina del menù (sopra «Vai agli ordini»)</label>
+    <textarea id="notaOrdine" name="notaOrdine" rows="3" maxlength="4000"
+              placeholder="es. Il modulo d'ordine chiude alle 22"><?= htmlspecialchars($settings['notaOrdine'] ?? '') ?></textarea>
+    <small class="muted">Stesse regole della nota di testata (multiriga, html), ma mostrata più in basso, appena sopra al pulsante «Vai agli ordini».</small>
     <button class="btn" type="submit">Salva configurazione</button>
   </form>
   <p class="muted" style="margin-top:12px">
