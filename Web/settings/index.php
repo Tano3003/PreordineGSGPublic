@@ -37,6 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // di lunghezza, niente trim che ne alteri gli a-capo.
     $notaTestata = isset($_POST['notaTestata']) ? mb_substr($_POST['notaTestata'], 0, 4000) : '';
     $notaOrdine  = isset($_POST['notaOrdine'])  ? mb_substr($_POST['notaOrdine'],  0, 4000) : '';
+    // Checkbox: stampare o no le note nel PDF/stampa del menù (default spento).
+    $stampaNotaTestata = isset($_POST['stampaNotaTestata']);
+    $stampaNotaOrdine  = isset($_POST['stampaNotaOrdine']);
     write_json_atomic($settingsFile, [
       'title' => $title, 'subtitle' => $sub,
       'coperto' => $coperto, 'importoAsporto' => $asporto,
@@ -46,7 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'msgOrdineConcluso' => $msgOrdineConcluso,
       'msgMostraQr' => $msgMostraQr,
       'notaTestata' => $notaTestata,
-      'notaOrdine' => $notaOrdine
+      'notaOrdine' => $notaOrdine,
+      'stampaNotaTestata' => $stampaNotaTestata,
+      'stampaNotaOrdine' => $stampaNotaOrdine
     ]);
     $msg = 'Configurazione salvata.';
   }
@@ -133,13 +138,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ── Dati correnti ────────────────────────────────────────────
-$settings = read_json($settingsFile, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0, 'mostraNote' => true, 'mostraTavolo' => true, 'tastieraTavolo' => 'numerica', 'msgOrdineConcluso' => '', 'msgMostraQr' => '', 'notaTestata' => '', 'notaOrdine' => '']);
+$settings = read_json($settingsFile, ['title' => 'SAGRA', 'subtitle' => '', 'coperto' => 0, 'importoAsporto' => 0, 'mostraNote' => true, 'mostraTavolo' => true, 'tastieraTavolo' => 'numerica', 'msgOrdineConcluso' => '', 'msgMostraQr' => '', 'notaTestata' => '', 'notaOrdine' => '', 'stampaNotaTestata' => false, 'stampaNotaOrdine' => false]);
 // File salvati prima dell'introduzione del campo: nessuna chiave => note mostrate (comportamento precedente).
 $mostraNoteChecked = !array_key_exists('mostraNote', $settings) || $settings['mostraNote'];
 // Idem per il campo «Tavolo»: chiave assente => mostrato, come faceva prima.
 $mostraTavoloChecked = !array_key_exists('mostraTavolo', $settings) || $settings['mostraTavolo'];
 // Idem per la tastiera del tavolo: chiave assente => numerica (il default).
 $tastieraTavolo = (isset($settings['tastieraTavolo']) && $settings['tastieraTavolo'] === 'alfanumerica') ? 'alfanumerica' : 'numerica';
+// Stampa delle note del menù: chiave assente => non stampate, come prima.
+$stampaNotaTestataChecked = !empty($settings['stampaNotaTestata']);
+$stampaNotaOrdineChecked  = !empty($settings['stampaNotaOrdine']);
 $menu     = read_json($menuFile, null);
 $menuCats = ($menu && isset($menu['categories'])) ? count($menu['categories']) : 0;
 $menuItems = 0;
@@ -202,10 +210,18 @@ admin_header('Impostazioni', 'settings');
     <textarea id="notaTestata" name="notaTestata" rows="3" maxlength="4000"
               placeholder="es. Orari di apertura, avvisi…"><?= htmlspecialchars($settings['notaTestata'] ?? '') ?></textarea>
     <small class="muted">Mostrata nella pagina del menù, subito sotto al titolo «Menù». Può andare su più righe e contenere html (es. <code>&lt;b&gt;</code>, <code>&lt;br&gt;</code>, <code>&lt;a&gt;</code>): va scritta con cautela, perché finisce in pagina così com'è. Vuota = non occupa spazio.</small>
+    <label class="check-field" style="display:flex;align-items:center;gap:8px;margin-top:6px">
+      <input type="checkbox" id="stampaNotaTestata" name="stampaNotaTestata" value="1" <?= $stampaNotaTestataChecked ? 'checked' : '' ?>>
+      <span>Stampa questa nota nella stampa / PDF del menù (in testata)</span>
+    </label>
     <label for="notaOrdine" style="margin-top:10px">Nota nella pagina del menù (sopra «Vai agli ordini»)</label>
     <textarea id="notaOrdine" name="notaOrdine" rows="3" maxlength="4000"
               placeholder="es. Il modulo d'ordine chiude alle 22"><?= htmlspecialchars($settings['notaOrdine'] ?? '') ?></textarea>
     <small class="muted">Stesse regole della nota di testata (multiriga, html), ma mostrata più in basso, appena sopra al pulsante «Vai agli ordini».</small>
+    <label class="check-field" style="display:flex;align-items:center;gap:8px;margin-top:6px">
+      <input type="checkbox" id="stampaNotaOrdine" name="stampaNotaOrdine" value="1" <?= $stampaNotaOrdineChecked ? 'checked' : '' ?>>
+      <span>Stampa questa nota nella stampa / PDF del menù (a piè di pagina)</span>
+    </label>
     <button class="btn" type="submit">Salva configurazione</button>
   </form>
   <p class="muted" style="margin-top:12px">

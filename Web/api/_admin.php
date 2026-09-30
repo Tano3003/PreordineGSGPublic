@@ -188,8 +188,9 @@ function admin_css() {
   .card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px;margin-bottom:16px}
   h2{margin:0 0 12px;font-size:1.15rem} h3{margin:0 0 8px;font-size:1rem}
   label{display:block;font-size:.8rem;font-weight:700;color:#475569;margin:10px 0 4px}
-  input[type=text],input[type=password],input[type=file],select{width:100%;padding:9px 11px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:.95rem;background:#fff}
-  input:focus{outline:none;border-color:#0f172a}
+  input[type=text],input[type=password],input[type=file],select,textarea{width:100%;padding:9px 11px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:.95rem;background:#fff;font-family:inherit}
+  textarea{resize:vertical;min-height:64px}
+  input:focus,textarea:focus{outline:none;border-color:#0f172a}
   .btn{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:9px 16px;border:none;border-radius:9px;background:#0f172a;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;text-decoration:none}
   .btn.alt{background:#fff;color:#0f172a;border:1.5px solid #cbd5e1}
   .btn.danger{background:#fee2e2;color:#b91c1c;border:1.5px solid #fecaca}

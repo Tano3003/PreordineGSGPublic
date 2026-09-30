@@ -29,6 +29,13 @@ if ($method === 'GET') {
   // Testi della schermata QR: chiave assente o vuota => il sito ripiega sui
   // suoi default ("Ordine concluso" / istruzioni cassa), quindi qui non si
   // forza nulla se non sono stati personalizzati.
+  // Note della pagina menù: chiave assente => '' (nessuna nota, come prima
+  // che esistesse l'opzione).
+  if (!isset($s['notaTestata'])) $s['notaTestata'] = '';
+  if (!isset($s['notaOrdine']))  $s['notaOrdine']  = '';
+  // Stampa delle note nel PDF del menù: chiave assente => non stampate.
+  $s['stampaNotaTestata'] = !empty($s['stampaNotaTestata']);
+  $s['stampaNotaOrdine']  = !empty($s['stampaNotaOrdine']);
   $s['logo'] = $logo;
   json_out($s);
 }
@@ -57,6 +64,13 @@ if ($method === 'POST') {
     // sito ripiega sui suoi default invece di mostrare una stringa vuota.
     'msgOrdineConcluso' => isset($b['msgOrdineConcluso']) ? trim(mb_substr((string)$b['msgOrdineConcluso'], 0, 100)) : '',
     'msgMostraQr'        => isset($b['msgMostraQr'])        ? trim(mb_substr((string)$b['msgMostraQr'],        0, 300)) : '',
+    // Note libere della pagina menù: possono contenere html multiriga, quindi
+    // solo un limite di lunghezza, niente trim che ne tocchi il contenuto.
+    'notaTestata' => isset($b['notaTestata']) ? mb_substr((string)$b['notaTestata'], 0, 4000) : '',
+    'notaOrdine'  => isset($b['notaOrdine'])  ? mb_substr((string)$b['notaOrdine'],  0, 4000) : '',
+    // Stampare le note nel PDF del menù: assente nel payload = no.
+    'stampaNotaTestata' => !empty($b['stampaNotaTestata']),
+    'stampaNotaOrdine'  => !empty($b['stampaNotaOrdine']),
   ];
   if (trim($s['title']) === '') $s['title'] = 'SAGRA';
   write_json_atomic($file, $s);
